@@ -1,0 +1,32 @@
+<label>
+	<item>
+		<name>Right</name>
+		<index>001</index>
+		<api>V4</api>
+		<speed>555</speed>
+	</item>
+	<item>
+		<name>Left</name>
+		<index>002</index>
+		<api>V3</api>
+		<speed>555</speed>
+	</item>
+	<item>
+		<name>Forward</name>
+		<index>003</index>
+		<api>V1</api>
+		<speed>555</speed>
+	</item>
+	<item>
+		<name>Backward</name>
+		<index>004</index>
+		<api>V2</api>
+		<speed>555</speed>
+	</item>
+	<item>
+		<name>Stop</name>
+		<index>005</index>
+		<api>V1</api>
+		<speed>0</speed>
+	</item>
+</label>
