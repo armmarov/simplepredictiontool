@@ -28,9 +28,79 @@ class CamThread(QThread):
                 p = convertToQtFormat.scaled(320, 240, Qt.KeepAspectRatio)
                 self.changePixmap.emit(p)
 
+class MLThread(QThread):
+
+    def __init__(self, parent=None, camera=None, data=None):
+        QThread.__init__(self, parent=parent)
+        print("[MLThread] Thread started..")
+        self.camera = camera
+        self.model = model.model()
+
+        self.data = data
+        self.mode = "none"
+
+        self.mlModel = self.model.createModel((config.INPUT_ROW,config.INPUT_COL,config.INPUT_CH), config.OUTPUT_CLASS)
+        self.data.setImgSize(config.WIDTH_SIZE, config.HEIGHT_SIZE, config.INPUT_CH)
+
+        self.d_lbl, self.d_ind, self.d_api, self.d_speed = self.data.importXML()
+
+    def run(self):
+        print("[MLThread] Run ", self.mode)
+
+        if self.mode == "train":
+            self.train()
+        elif self.mode == "load":
+            self.load()
+        elif self.mode == "predict":
+            self.predict()
+        elif self.mode == "predict_cnt":
+            self.predict_cnt()
+    
+    def train(self):
+        train_dat = np.array(self.data.loadData(isTraining=True)[0])
+        train_lbl = np.array(self.data.loadData(isTraining=True)[1])
+
+        validation_dat = np.array(self.data.loadData(isTraining=False)[0])
+        validation_lbl = np.array(self.data.loadData(isTraining=False)[1])
+
+        self.model.training(train_dat, train_lbl, validation_dat, validation_lbl, epochs=config.EPOCH_NUM, 
+                                                steps_per_epoch=config.STEPS_PER_EPOCH, 
+                                                batch=config.BATCH_SIZE)
+    
+    def load(self):
+        print("Loading weights")
+        self.model.load_weight()
+        print("Finish loading weights")
+    
+    def predict(self):
+        #print("Start prediction")
+        rval, img = self.camera.captureImage()
+        if rval:
+            dat = []
+            dat.append(self.data.resize(img))
+            cv2.imwrite("./test.jpg", self.data.resize(img))
+            resize_img = np.array(dat)
+            ret = self.model.predict(resize_img)
+
+            if ret > 0:
+                for i in range(0,len(self.d_ind)):
+                    if int(self.d_ind[i]) == ret:
+                        url = 'http://blynk-cloud.com/' + str(config.BLYNK_TOKEN) + '/update/' + str(self.d_api[i]) + '?value=' + str(self.d_speed[i])
+                        print(url)
+                        data = ''
+                        response = requests.get(url, data)
+                        print(response)
+                        break
+
+    def predict_cnt(self):
+
+        while(1):
+            self.predict()
+            tm.sleep(0.1)
+
 class MainApplication(QDialog):
 
-    def __init__(self, parent=None, camera=None, model=None, data=None):
+    def __init__(self, parent=None, camera=None, data=None):
 
         super(MainApplication, self).__init__(parent)
 
@@ -38,7 +108,7 @@ class MainApplication(QDialog):
         self.cameraState = False
 
         self.data = data
-        self.model = model
+        #self.model = model
 
         self.d_lbl, self.d_ind, self.d_api, self.d_speed = self.data.importXML()
 
@@ -47,8 +117,9 @@ class MainApplication(QDialog):
         self.th.changePixmap.connect(self.update_image)
         self.th.start()
 
-        self.model.createModel((config.INPUT_ROW,config.INPUT_COL,config.INPUT_CH), config.OUTPUT_CLASS)
-        self.data.setImgSize(config.WIDTH_SIZE, config.HEIGHT_SIZE, config.INPUT_CH)
+        #self.model.createModel((config.INPUT_ROW,config.INPUT_COL,config.INPUT_CH), config.OUTPUT_CLASS)
+        #self.data.setImgSize(config.WIDTH_SIZE, config.HEIGHT_SIZE, config.INPUT_CH)
+        self.th_ml = MLThread(camera=self.camera, data=self.data)
 
         self.init_UI()
     
@@ -70,6 +141,9 @@ class MainApplication(QDialog):
 
     def start_training(self):
 
+        self.th_ml.mode = "train"
+        self.th_ml.start()
+        '''
         train_dat = np.array(self.data.loadData(isTraining=True)[0])
         train_lbl = np.array(self.data.loadData(isTraining=True)[1])
 
@@ -79,16 +153,26 @@ class MainApplication(QDialog):
         self.model.training(train_dat, train_lbl, validation_dat, validation_lbl, epochs=config.EPOCH_NUM, 
                                                 steps_per_epoch=config.STEPS_PER_EPOCH, 
                                                 batch=config.BATCH_SIZE)
+        '''
 
     def load_weight(self):
 
+        self.th_ml.mode = "load"
+        self.th_ml.start()
+
+        '''
         print("Load weight")
         self.model.load_weight()
         print("Load weight successful")
+        '''
 
     def predict(self):
 
-        #print("Start prediction")
+        self.th_ml.mode = "predict"
+        self.th_ml.start()
+
+        '''
+        print("Start prediction")
         rval, img = self.camera.captureImage()
         if rval:
             dat = []
@@ -106,13 +190,19 @@ class MainApplication(QDialog):
                         response = requests.get(url, data)
                         print(response)
                         break
+        '''
     
     def predict_cnt(self):
 
+        self.th_ml.mode = "predict_cnt"
+        self.th_ml.start()
+
+        '''
         print("Start prediction continuously")
         while(1):
             self.predict()
             tm.sleep(0.1)
+        '''
 
     def selectionChange(self, i):
 
@@ -201,9 +291,9 @@ if __name__=="__main__":
 
     camera = webcam.webcam()
     data = data.data()
-    model = model.model()
+    #model = model.model()
     
     app = QApplication([])
-    mainApps = MainApplication(camera=camera, model=model, data=data)
+    mainApps = MainApplication(camera=camera, data=data)
     mainApps.show()
     sys.exit(app.exec_())
