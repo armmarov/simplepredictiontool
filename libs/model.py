@@ -4,13 +4,24 @@ import os
 
 class model:
 
+    class __model:
+        def __init__(self):
+            self.val = None
+
+        def __str__(self):
+            return self.val
+    
+    instance = None
+
     def __init__(self):
+
+        if not model.instance:
+            model.instance = model.__model
+           
+    def createModel(self, input_shape, num_classes):
 
         self.seqmodel = None
         self.ckpt_path = "model/cp.ckpt"
-    
-    def createModel(self, input_shape, num_classes):
-
         
         self.seqmodel = tf.keras.applications.MobileNetV2(
                     weights='imagenet',
@@ -29,7 +40,7 @@ class model:
 
         return self.seqmodel
     
-    def training(self, x, y, epochs, steps_per_epoch, batch):
+    def training(self, x, y, x_valid, y_valid, epochs, steps_per_epoch, batch):
 
         cp_cb = tf.keras.callbacks.ModelCheckpoint(self.ckpt_path,
                                                     save_weights_only=True,
@@ -37,6 +48,7 @@ class model:
 
         self.seqmodel.fit(x, y, batch_size=batch, 
                             epochs=epochs, 
+                            validation_data=(x_valid, y_valid),
                             steps_per_epoch=steps_per_epoch,
                             callbacks = [cp_cb])
     
@@ -51,9 +63,12 @@ class model:
     def predict(self, x):
 
         pred_res = self.seqmodel.predict(x)
-        ret = np.argmax(pred_res)
-        print("Prediction: ", ret, pred_res)
-
+        ret = 0
+        for x in pred_res[0]:
+            if x > 0.9:
+                ret = np.argmax(pred_res)
+                print("Prediction: ", ret, pred_res)
+    
         return ret
 
 

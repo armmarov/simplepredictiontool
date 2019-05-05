@@ -6,6 +6,7 @@ from libs import webcam, model, data, config
 import cv2
 import numpy as np
 import requests
+import time as tm
 
 class CamThread(QThread):
 
@@ -72,7 +73,10 @@ class MainApplication(QDialog):
         train_dat = np.array(self.data.loadData(isTraining=True)[0])
         train_lbl = np.array(self.data.loadData(isTraining=True)[1])
 
-        self.model.training(train_dat, train_lbl, epochs=config.EPOCH_NUM, 
+        validation_dat = np.array(self.data.loadData(isTraining=False)[0])
+        validation_lbl = np.array(self.data.loadData(isTraining=False)[1])
+
+        self.model.training(train_dat, train_lbl, validation_dat, validation_lbl, epochs=config.EPOCH_NUM, 
                                                 steps_per_epoch=config.STEPS_PER_EPOCH, 
                                                 batch=config.BATCH_SIZE)
 
@@ -84,7 +88,7 @@ class MainApplication(QDialog):
 
     def predict(self):
 
-        print("Start prediction")
+        #print("Start prediction")
         rval, img = self.camera.captureImage()
         if rval:
             dat = []
@@ -93,13 +97,22 @@ class MainApplication(QDialog):
             resize_img = np.array(dat)
             ret = self.model.predict(resize_img)
 
-            for i in range(0,len(self.d_ind)):
-                if int(self.d_ind[i]) == ret:
-                    url = 'http://blynk-cloud.com/' + str(config.BLYNK_TOKEN) + '/update/' + str(self.d_api[i]) + '?value=' + str(self.d_speed[i])
-                    data = ''
-                    response = requests.post(url, data)
-                    print(response)
-                    break
+            if ret > 0:
+                for i in range(0,len(self.d_ind)):
+                    if int(self.d_ind[i]) == ret:
+                        url = 'http://blynk-cloud.com/' + str(config.BLYNK_TOKEN) + '/update/' + str(self.d_api[i]) + '?value=' + str(self.d_speed[i])
+                        print(url)
+                        data = ''
+                        response = requests.get(url, data)
+                        print(response)
+                        break
+    
+    def predict_cnt(self):
+
+        print("Start prediction continuously")
+        while(1):
+            self.predict()
+            tm.sleep(0.1)
 
     def selectionChange(self, i):
 
@@ -133,6 +146,8 @@ class MainApplication(QDialog):
         loadBtn.clicked.connect(self.load_weight)
         predictionBtn = QPushButton("Predict")
         predictionBtn.clicked.connect(self.predict)
+        predictionCntBtn = QPushButton("Predict Continuously")
+        predictionCntBtn.clicked.connect(self.predict_cnt)
         
         topLayout = QHBoxLayout()
         topLayout.addWidget(appLabel)
@@ -159,6 +174,7 @@ class MainApplication(QDialog):
         testCtrlBtns = QHBoxLayout()
         testCtrlBtns.addWidget(loadBtn)
         testCtrlBtns.addWidget(predictionBtn)
+        testCtrlBtns.addWidget(predictionCntBtn)
         testLayout = QVBoxLayout()
         testLayout.addLayout(testCtrlBtns)
         testLayout.addStretch(1)
