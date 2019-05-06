@@ -48,11 +48,12 @@ class model:
     def training(self, x, y, x_valid, y_valid, epochs, steps_per_epoch, batch):
 
         print(self.mlgraph, self.seqmodel)
-        with self.mlgraph.as_default():
-            cp_cb = tf.keras.callbacks.ModelCheckpoint(self.ckpt_path,
-                                                        save_weights_only=True,
-                                                        verbose=1)
 
+        cp_cb = tf.keras.callbacks.ModelCheckpoint(self.ckpt_path,
+                                                    save_weights_only=True,
+                                                    verbose=1)
+
+        with self.mlgraph.as_default():
             self.seqmodel.fit(x, y, batch_size=batch, 
                                 epochs=epochs, 
                                 validation_data=(x_valid, y_valid),

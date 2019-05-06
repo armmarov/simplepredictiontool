@@ -46,7 +46,7 @@ class MLThread(QThread):
         self.mlModel = self.model.createModel((config.INPUT_ROW,config.INPUT_COL,config.INPUT_CH), config.OUTPUT_CLASS)
         self.data.setImgSize(config.WIDTH_SIZE, config.HEIGHT_SIZE, config.INPUT_CH)
 
-        self.d_lbl, self.d_ind, self.d_api, self.d_speed = self.data.importXML()
+        self.d_lbl, self.d_ind, self.d_api = self.data.importXML()
 
     def run(self):
         print("[MLThread] Run ", self.mode)
@@ -94,7 +94,7 @@ class MLThread(QThread):
             if ret > 0:                
                 for i in range(0,len(self.d_ind)):
                     if int(self.d_ind[i]) == ret:
-                        url = 'http://blynk-cloud.com/' + str(config.BLYNK_TOKEN) + '/update/' + str(self.d_api[i]) + '?value=' + str(self.d_speed[i])
+                        url = str(self.d_api[i])
                         print(url)
                         data = ''
                         response = requests.get(url, data)
@@ -124,7 +124,7 @@ class MainApplication(QDialog):
         self.data = data
         #self.model = model
 
-        self.d_lbl, self.d_ind, self.d_api, self.d_speed = self.data.importXML()
+        self.d_lbl, self.d_ind, self.d_api = self.data.importXML()
 
         # Start camera thread
         self.th = CamThread(camera=self.camera)
@@ -309,14 +309,16 @@ class MainApplication(QDialog):
         trainCtrlBtns = QHBoxLayout()
         trainCtrlBtns.addWidget(self.trainRadioBtn)
         trainCtrlBtns.addWidget(self.validRadioBtn)   
-        trainCtrlBtns.addWidget(self.clearBtn)     
         trainCtrlBtns1 = QHBoxLayout()
+        trainCtrlBtns1.addWidget(self.clearBtn)
         trainCtrlBtns1.addWidget(captureBtn)
-        trainCtrlBtns1.addWidget(self.startTrainBtn)
+        trainCtrlBtns2 = QHBoxLayout()
+        trainCtrlBtns2.addWidget(self.startTrainBtn)
         trainLayout = QVBoxLayout()
         trainLayout.addLayout(trainLabel)
         trainLayout.addLayout(trainCtrlBtns)
         trainLayout.addLayout(trainCtrlBtns1)
+        trainLayout.addLayout(trainCtrlBtns2)
         trainLayout.addStretch(1)
         trainCtrlGroup = QGroupBox("Training Control")
         trainCtrlGroup.setLayout(trainLayout)

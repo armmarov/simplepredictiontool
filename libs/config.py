@@ -10,10 +10,6 @@ INPUT_COL    = WIDTH_SIZE
 INPUT_CH     = 3
 
 ## Training parameters
-EPOCH_NUM       = 10
+EPOCH_NUM       = 1000
 STEPS_PER_EPOCH = 5
 BATCH_SIZE      = 4
-
-## Blynk 
-BLYNK_TOKEN = '13da22b03a5e4a9aabd2bd7109fc8260'
-

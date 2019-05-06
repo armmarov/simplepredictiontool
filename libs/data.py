@@ -48,17 +48,13 @@ class data:
         labels = []
         index = []
         api = []
-        speed = []
 
         for elem in items:
             labels.append(elem.childNodes[1].firstChild.data)
             index.append(elem.childNodes[3].firstChild.data)
             api.append(elem.childNodes[5].firstChild.data)
-            speed.append(elem.childNodes[7].firstChild.data)
 
-        #print(labels, index, api, speed)
-
-        return labels, index, api, speed
+        return labels, index, api
 
     def removeDatasets(self):
 

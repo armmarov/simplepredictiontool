@@ -2,31 +2,26 @@
 	<item>
 		<name>Right</name>
 		<index>001</index>
-		<api>V4</api>
-		<speed>555</speed>
+		<api>http://blynk-cloud.com/13da22b03a5e4a9aabd2bd7109fc8260/update/V4?value=555</api>
 	</item>
 	<item>
 		<name>Left</name>
 		<index>002</index>
-		<api>V3</api>
-		<speed>555</speed>
+		<api>http://blynk-cloud.com/13da22b03a5e4a9aabd2bd7109fc8260/update/V3?value=555</api>
 	</item>
 	<item>
 		<name>Forward</name>
 		<index>003</index>
-		<api>V1</api>
-		<speed>555</speed>
+		<api>http://blynk-cloud.com/13da22b03a5e4a9aabd2bd7109fc8260/update/V1?value=555</api>
 	</item>
 	<item>
 		<name>Backward</name>
 		<index>004</index>
-		<api>V2</api>
-		<speed>555</speed>
+		<api>http://blynk-cloud.com/13da22b03a5e4a9aabd2bd7109fc8260/update/V2?value=555</api>
 	</item>
 	<item>
 		<name>Stop</name>
 		<index>005</index>
-		<api>V1</api>
-		<speed>0</speed>
+		<api>http://blynk-cloud.com/13da22b03a5e4a9aabd2bd7109fc8260/update/V1?value=0</api>
 	</item>
 </label>
