@@ -54,6 +54,7 @@ class webcam:
     def setTrainingMode(self, isTraining):
 
         self.isTrainingMode = isTraining
+        #print(self.setTrainingMode)
 
     def streamImage(self, cb):
 

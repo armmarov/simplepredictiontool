@@ -56,11 +56,21 @@ class data:
             api.append(elem.childNodes[5].firstChild.data)
             speed.append(elem.childNodes[7].firstChild.data)
 
-        print(labels, index, api, speed)
+        #print(labels, index, api, speed)
 
         return labels, index, api, speed
 
-    
+    def removeDatasets(self):
+
+        train_files = glob.glob('./datasets/train/*.jpg')
+        test_files = glob.glob('./datasets/test/*.jpg')
+
+        for f in train_files:
+            os.remove(f)
+        
+        for f in test_files:
+            os.remove(f)
+
     def reformat(self, dat, label):
 
         datasets = dat.reshape((-1, self.height, self.width, self.channel)).astype(np.float32)

@@ -66,6 +66,7 @@ class model:
             #print(self.seqmodel.get_weights())
             self.weight = self.seqmodel.get_weights()
             #print(self.weight[len(self.weight) - 1])
+        return self.weight
     
     def evaluation(self, x, y):
 
@@ -80,7 +81,7 @@ class model:
             pred_res = self.seqmodel.predict(x)
             ret = 0
             for x in pred_res[0]:
-                if x > 0.97:
+                if x > 0.90:
                     ret = np.argmax(pred_res)
                     print("Prediction: ", ret, pred_res)
     
