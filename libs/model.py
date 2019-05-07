@@ -36,10 +36,7 @@ class model:
             dropout = tf.keras.layers.Dropout(rate=0.25)(self.seqmodel.layers[-1].output)
             logits = tf.keras.layers.Dense(units=num_classes, activation='softmax')(dropout)
             self.seqmodel = tf.keras.models.Model(self.seqmodel.inputs, logits)
-            self.seqmodel.compile(optimizer='adam',
-                                    loss='sparse_categorical_crossentropy',
-                                    metrics=['accuracy'])
-            
+                        
             self.seqmodel.summary()
             print(self.mlgraph, self.seqmodel)
 
@@ -49,11 +46,19 @@ class model:
 
         print(self.mlgraph, self.seqmodel)
 
-        cp_cb = tf.keras.callbacks.ModelCheckpoint(self.ckpt_path,
-                                                    save_weights_only=True,
-                                                    verbose=1)
-
         with self.mlgraph.as_default():
+
+            self.seqmodel.compile(optimizer='adam',
+                                loss='sparse_categorical_crossentropy',
+                                metrics=['accuracy'])
+            
+            cp_cb = tf.keras.callbacks.ModelCheckpoint(self.ckpt_path,
+                                save_weights_only=True,
+                                verbose=1)
+
+
+            tf.keras.backend.get_session().run(tf.global_variables_initializer())
+            
             self.seqmodel.fit(x, y, batch_size=batch, 
                                 epochs=epochs, 
                                 validation_data=(x_valid, y_valid),
