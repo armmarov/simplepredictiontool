@@ -4,6 +4,8 @@
 
 The Simple Prediction Tool is developed for beginners to learn the basic image recognition process. The tool is developed by using Keras with Tensorflow framework for learning and prediction. User can perform image capturing, learning and prediction by using simple PyQT GUI provided along with this application.
 
+Prerequisite : python3, pip3
+
 To install :
 >> make init
 

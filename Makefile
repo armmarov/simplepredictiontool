@@ -1,5 +1,5 @@
 init:
-	pip install -r requirements.txt
+	pip3 install -r requirements.txt
 
 test:
 	python3 -m unittest tests/simple_unittest.py
