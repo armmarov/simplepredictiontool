@@ -2,6 +2,7 @@ from .context import config, webcam, model, data
 import unittest
 import tensorflow as tf
 import numpy as np
+import cv2
 
 class simple_unittest(unittest.TestCase):
 
@@ -40,7 +41,7 @@ class simple_unittest(unittest.TestCase):
 
         self.assertIsNotNone(md.createModel((20,20,3), 5))
     
-    #@unittest.skip("Test this separately")
+    @unittest.skip("Test this separately")
     def test_training(self):
         print("test_training...")
 
@@ -130,6 +131,22 @@ class simple_unittest(unittest.TestCase):
         dt = data.data()
 
         dt.importXML()
+    
+    #@unittest.skip("Test this separately")
+    def test_preprocess_extractArrow(self):
+
+        dt = data.data()
+
+        dt.setImgSize(config.WIDTH_SIZE, config.HEIGHT_SIZE, config.INPUT_CH)
+
+        train_dat = np.array(dt.loadData(isTraining=True)[0])
+
+        for i, img in enumerate(train_dat):
+            pp_res = dt.preprocess_extractArrow(img)
+            cv2.imwrite("res_" + str(i) + ".jpg", pp_res)
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
