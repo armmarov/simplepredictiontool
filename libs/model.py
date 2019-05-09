@@ -27,15 +27,11 @@ class model:
         self.mlgraph = tf.Graph()
         
         with self.mlgraph.as_default():
-            self.seqmodel = tf.keras.applications.MobileNetV2(
-                        weights='imagenet',
-                        include_top=False,
-                        pooling='avg',
-                        input_shape=input_shape
-            )
-            dropout = tf.keras.layers.Dropout(rate=0.25)(self.seqmodel.layers[-1].output)
-            logits = tf.keras.layers.Dense(units=num_classes, activation='softmax')(dropout)
-            self.seqmodel = tf.keras.models.Model(self.seqmodel.inputs, logits)
+            
+            #input_layer, logit_layer = self.model_mobilenetv2(input_shape, num_classes)
+            input_layer, logit_layer = self.model_userdefined1(input_shape, num_classes)
+            
+            self.seqmodel = tf.keras.models.Model(input_layer, logit_layer)
                         
             self.seqmodel.summary()
             print(self.mlgraph, self.seqmodel)
@@ -93,4 +89,39 @@ class model:
     
         return ret
 
+    def model_mobilenetv2(self, _input, _classes):
+
+        defmodel = tf.keras.applications.MobileNetV2(
+                weights='imagenet',
+                include_top=False,
+                pooling='avg',
+                input_shape=_input
+                )
+        dropout = tf.keras.layers.Dropout(rate=0.25)(defmodel.layers[-1].output)
+        logits = tf.keras.layers.Dense(units=_classes, activation='softmax')(dropout)
+
+        return defmodel.inputs, logits
+
+    def model_userdefined1(self, _input, _classes):
+
+        input_layer = tf.keras.Input(shape=_input, name='input_layer')
+
+        # Some convolutional layers
+        conv_1 = tf.keras.layers.Conv2D(32, kernel_size=(3, 3), padding='same', activation='relu')(input_layer)
+        conv_1 = tf.keras.layers.MaxPooling2D(padding='same')(conv_1)
+        conv_2 = tf.keras.layers.Conv2D(32, kernel_size=(3, 3), padding='same', activation='relu')(conv_1)
+        conv_2 = tf.keras.layers.MaxPooling2D(padding='same')(conv_2)
+
+        # Flatten the output of the convolutional layers
+        conv_flat = tf.keras.layers.Flatten()(conv_2)
+
+        # Some dense layers with two separate outputs
+        fc_1 = tf.keras.layers.Dense(128, activation='relu')(conv_flat)
+        fc_1 = tf.keras.layers.Dropout(0.2)(fc_1)
+        fc_2 = tf.keras.layers.Dense(128, activation='relu')(fc_1)
+        fc_2 = tf.keras.layers.Dropout(0.2)(fc_2)
+
+        output_layer = tf.keras.layers.Dense(_classes, activation='softmax', name='logits')(fc_2)
+
+        return input_layer, output_layer
 

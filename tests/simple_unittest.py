@@ -40,7 +40,7 @@ class simple_unittest(unittest.TestCase):
 
         self.assertIsNotNone(md.createModel((20,20,3), 5))
     
-    @unittest.skip("Test this separately")
+    #@unittest.skip("Test this separately")
     def test_training(self):
         print("test_training...")
 
@@ -52,13 +52,11 @@ class simple_unittest(unittest.TestCase):
         train_dat = np.array(dt.loadData(isTraining=True)[0])
         train_lbl = np.array(dt.loadData(isTraining=True)[1])
 
-        #train_dat_rd, train_lbl_rd = dt.randomize(train_dat, train_lbl)
-
-        print("train_dat_rd", train_dat.shape)
-        print("train_lbl_rd", train_lbl.shape)
+        valid_dat = np.array(dt.loadData(isTraining=False)[0])
+        valid_lbl = np.array(dt.loadData(isTraining=False)[1])
 
         md.createModel((config.INPUT_ROW,config.INPUT_COL,config.INPUT_CH), config.OUTPUT_CLASS)
-        md.training(train_dat, train_lbl, epochs=config.EPOCH_NUM, 
+        md.training(train_dat, train_lbl, valid_dat, valid_lbl, epochs=config.EPOCH_NUM, 
                                                 steps_per_epoch=config.STEPS_PER_EPOCH, 
                                                 batch=config.BATCH_SIZE)
 
@@ -126,6 +124,7 @@ class simple_unittest(unittest.TestCase):
         print("Prediction start")
         print(wb.streamImageForPredict(md.predict, dt.resize, config.WIDTH_SIZE, config.HEIGHT_SIZE))
 
+    @unittest.skip("Test this separately")
     def test_importXML(self):
 
         dt = data.data()
