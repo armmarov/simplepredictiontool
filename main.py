@@ -48,6 +48,9 @@ class MLThread(QThread):
 
         self.d_lbl, self.d_ind, self.d_api = self.data.importXML()
 
+        self.sens_cnt = 0
+        self.prev_num = 0
+
     def run(self):
         print("[MLThread] Run ", self.mode)
 
@@ -85,23 +88,23 @@ class MLThread(QThread):
         #print("Start prediction")
         imgCrop = self.camera.getCropImage()
 
-        '''
-        dat = []
-        dat.append(self.data.resize(imgCrop))
-        cv2.imwrite("./test.jpg", self.data.resize(imgCrop))
-        resize_img = np.array(dat)
-        '''
         ret = self.model.predict(imgCrop)
 
-        if ret > 0:                
-            for i in range(0,len(self.d_ind)):
-                if int(self.d_ind[i]) == ret:
-                    url = str(self.d_api[i])
-                    print(url)
-                    data = ''
-                    response = requests.get(url, data)
-                    print(response)
-                    break
+        if ret > 0 and ret == self.prev_num:
+            if self.sens_cnt >= config.SENSITIVITY:  
+                self.sens_cnt = 0
+                for i in range(0,len(self.d_ind)):
+                    if int(self.d_ind[i]) == ret:
+                        url = str(self.d_api[i])
+                        print(url)
+                        data = ''
+                        response = requests.get(url, data)
+                        print(response)
+                        break
+            else :
+                self.sens_cnt = self.sens_cnt + 1
+        else:
+            self.prev_num = ret
 
         if isCont == False:
             self.MLStatus.emit("PREDSUCCESS")
@@ -109,7 +112,8 @@ class MLThread(QThread):
     def predict_cnt(self):
 
         while(self.cont):
-            self.predict(True)
+            if self.camera.getNewPict():
+                self.predict(True)
             tm.sleep(0.5)
         
         print("Continuous Prediction Finished")

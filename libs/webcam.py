@@ -14,6 +14,8 @@ class webcam:
 
         self.img = None
         self.imgCrop = None
+
+        self.newPict = False
     
     def changeLabel(self, label):
 
@@ -58,6 +60,9 @@ class webcam:
         self.isTrainingMode = isTraining
         #print(self.setTrainingMode)
     
+    def getNewPict(self):
+        return self.newPict
+    
     def drawContour(self, w_resize, h_resize):
 
         h_org, w_org, c_org = self.img.shape
@@ -72,11 +77,15 @@ class webcam:
 
         for c in contours:
             x, y, w, h = cv2.boundingRect(c)
-            if w != w_org and h != h_org:
-                if w > w_org/3 or h > h_org/3:
-                    cv2.rectangle(self.img, (x,y), (x+w, y+h), (0,0,255), 2)
-                    self.imgCrop = cv2.resize(self.img[y:y+h, x:x+w], (int(w_resize), int(h_resize)), interpolation=cv2.INTER_CUBIC)
-                    break
+            approx = cv2.approxPolyDP(c, 0.07 * cv2.arcLength(c, True), True)
+            
+            if (len(approx) >= 4) and (w != w_org and h != h_org) and (w > w_org/3 or h > h_org/3):
+                self.newPict = True
+                cv2.rectangle(self.img, (x,y), (x+w, y+h), (0,0,255), 2)
+                self.imgCrop = cv2.resize(self.img[y:y+h, x:x+w], (int(w_resize), int(h_resize)), interpolation=cv2.INTER_CUBIC)
+                break
+            else:
+                self.newPict = False
 
     def streamImage(self, cb):
 

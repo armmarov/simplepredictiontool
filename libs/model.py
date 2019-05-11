@@ -22,19 +22,20 @@ class model:
            
     def createModel(self, input_shape, num_classes):
 
+        self.preprocess = True
+
         self.seqmodel = None
         self.weight = None
+        self.ch = input_shape[2]
         self.ckpt_path = "model/cp.ckpt"
 
         self.mlgraph = tf.Graph()
         
         with self.mlgraph.as_default():
             
-            #input_layer, logit_layer = self.model_mobilenetv2(input_shape, num_classes)
-            input_layer, logit_layer = self.model_userdefined1(input_shape, num_classes)
-            
-            self.seqmodel = tf.keras.models.Model(input_layer, logit_layer)
-                        
+            #self.seqmodel = self.model_mobilenetv2(input_shape, num_classes)
+            self.seqmodel = self.model_userdefined1(input_shape, num_classes)
+
             self.seqmodel.summary()
             print(self.mlgraph, self.seqmodel)
 
@@ -55,18 +56,24 @@ class model:
                                 verbose=1)
 
             tf.keras.backend.get_session().run(tf.global_variables_initializer())
-            
+               
             x_pp_org = []
             for i in range (0, len(x)):
-                x_pp_org.append(self.preprocessing(x[i], y[i]))
+                if self.preprocess:
+                    x_pp_org.append(self.preprocessing_binary(x[i], y[i]))
+                else:
+                    x_pp_org.append(self.preprocessing_normalize(x[i], y[i]))
             x_pp = np.array(x_pp_org)
-            x_pp = np.reshape(x_pp, (len(x_pp_org),len(x_pp_org[0]), len(x_pp_org[1]), 1))
+            x_pp = np.reshape(x_pp, (len(x_pp_org), len(x_pp_org[0]), len(x_pp_org[1]), self.ch ))
 
             x_valid_pp_org = []
             for j in range(0, len(x_valid)):
-                x_valid_pp_org.append(self.preprocessing(x_valid[j], y_valid[j]))
+                if self.preprocess:
+                    x_valid_pp_org.append(self.preprocessing_binary(x_valid[j], y_valid[j]))
+                else:
+                    x_valid_pp_org.append(self.preprocessing_normalize(x_valid[j], y_valid[j]))
             x_valid_pp = np.array(x_valid_pp_org)
-            x_valid_pp = np.reshape(x_valid_pp, (len(x_valid_pp_org),len(x_valid_pp_org[0]), len(x_valid_pp_org[1]), 1))
+            x_valid_pp = np.reshape(x_valid_pp, (len(x_valid_pp_org),len(x_valid_pp_org[0]), len(x_valid_pp_org[1]), self.ch ))
 
             self.seqmodel.fit(x_pp, y, batch_size=batch, 
                                 epochs=epochs, 
@@ -94,9 +101,13 @@ class model:
             #print(self.weight[len(self.weight) - 1])
             self.seqmodel.set_weights(self.weight)
             
-            x_pp_org = self.preprocessing(x)
+            if self.preprocess:
+                x_pp_org = self.preprocessing_binary(x)
+            else:
+                x_pp_org = self.preprocessing_normalize(x)
+
             x_pp = np.array(x_pp_org)
-            x_pp = np.reshape(x_pp, (1,len(x_pp_org[0]), len(x_pp_org[1]), 1))
+            x_pp = np.reshape(x_pp, (1, len(x_pp_org[0]), len(x_pp_org[1]), self.ch ))
             
             pred_res = self.seqmodel.predict(x_pp)
             ret = 0
@@ -109,16 +120,25 @@ class model:
 
     def model_mobilenetv2(self, _input, _classes):
 
-        defmodel = tf.keras.applications.MobileNetV2(
+        base_model = tf.keras.applications.MobileNetV2(
                 weights='imagenet',
                 include_top=False,
                 pooling='avg',
                 input_shape=_input
                 )
-        dropout = tf.keras.layers.Dropout(rate=0.25)(defmodel.layers[-1].output)
-        logits = tf.keras.layers.Dense(units=_classes, activation='softmax')(dropout)
 
-        return defmodel.inputs, logits
+        fc_1 = tf.keras.layers.Dense(512, activation='relu')(base_model.layers[-1].output)
+        fc_1 = tf.keras.layers.Dropout(0.75)(fc_1)
+        fc_2 = tf.keras.layers.Dense(128, activation='relu')(fc_1)
+        fc_2 = tf.keras.layers.Dropout(0.5)(fc_2)
+
+        logits = tf.keras.layers.Dense(units=_classes, activation='softmax')(fc_2)
+
+        for lyr in base_model.layers:
+            print("freeze", lyr)
+            lyr.trainable=False
+
+        return tf.keras.models.Model(base_model.inputs, logits)
 
     def model_userdefined1(self, _input, _classes):
 
@@ -141,9 +161,9 @@ class model:
 
         output_layer = tf.keras.layers.Dense(_classes, activation='softmax', name='logits')(fc_2)
 
-        return input_layer, output_layer
+        return tf.keras.models.Model(input_layer, output_layer)
     
-    def preprocessing(self, img, lbl=None):
+    def preprocessing_binary(self, img, lbl=None):
 
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -155,4 +175,31 @@ class model:
             cv2.imwrite("datasets/temp/res_" + str(random.randint(1,200)) + "_" + str(lbl) + ".jpg", img_inv)
         
         return img_inv
+    
+    def preprocessing_combine(self, img, lbl=None):
 
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        (thresh, img_bin) = cv2.threshold(img_gray, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        
+        img_inv = 255-img_bin
+
+        if lbl != None:
+            cv2.imwrite("datasets/temp/res_" + str(random.randint(1,200)) + "_" + str(lbl) + ".jpg", img_inv)
+        
+        return img_inv
+    
+    def preprocessing_normalize(self, img, lbl=None):
+
+        h_org, w_org, c_org = img.shape
+
+        img_yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+
+        img_yuv[:,:,0] = cv2.equalizeHist(img_yuv[:,:,0])
+
+        img_output = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+
+        if lbl != None:
+            cv2.imwrite("datasets/temp/res_" + str(random.randint(1,200)) + "_" + str(lbl) + ".jpg", img_output)
+        
+        return img_output

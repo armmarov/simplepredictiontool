@@ -13,3 +13,6 @@ INPUT_CH     = 1  # 3 for RGB, 1 for BLACK/WHITE
 EPOCH_NUM       = 1000
 STEPS_PER_EPOCH = 5
 BATCH_SIZE      = 4
+
+## Prediction
+SENSITIVITY  = 1
