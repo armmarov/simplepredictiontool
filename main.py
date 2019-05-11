@@ -43,7 +43,7 @@ class MLThread(QThread):
 
         self.cont = False
 
-        self.mlModel = self.model.createModel((config.INPUT_ROW,config.INPUT_COL,config.INPUT_CH), config.OUTPUT_CLASS)
+        self.mlModel = self.model.createModel((config.INPUT_ROW,config.INPUT_COL,config.INPUT_CH), config.OUTPUT_CLASS, config.MODEL_TYPE)
         self.data.setImgSize(config.WIDTH_SIZE, config.HEIGHT_SIZE, config.INPUT_CH)
 
         self.d_lbl, self.d_ind, self.d_api = self.data.importXML()
@@ -91,7 +91,7 @@ class MLThread(QThread):
         ret = self.model.predict(imgCrop)
 
         if ret > 0 and ret == self.prev_num:
-            if self.sens_cnt >= config.SENSITIVITY:  
+            if self.sens_cnt >= config.PRED_SENSITIVITY:  
                 self.sens_cnt = 0
                 for i in range(0,len(self.d_ind)):
                     if int(self.d_ind[i]) == ret:
@@ -114,7 +114,7 @@ class MLThread(QThread):
         while(self.cont):
             if self.camera.getNewPict():
                 self.predict(True)
-            tm.sleep(0.5)
+            tm.sleep(config.PRED_CONT_DELAY)
         
         print("Continuous Prediction Finished")
 

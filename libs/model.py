@@ -20,9 +20,7 @@ class model:
         if not model.instance:
             model.instance = model.__model
            
-    def createModel(self, input_shape, num_classes):
-
-        self.preprocess = True
+    def createModel(self, input_shape, num_classes, model_type="ud1"):
 
         self.seqmodel = None
         self.weight = None
@@ -33,8 +31,10 @@ class model:
         
         with self.mlgraph.as_default():
             
-            #self.seqmodel = self.model_mobilenetv2(input_shape, num_classes)
-            self.seqmodel = self.model_userdefined1(input_shape, num_classes)
+            if model_type == "mobilenetv2":
+                self.seqmodel = self.model_mobilenetv2(input_shape, num_classes)
+            elif model_type == "ud1":
+                self.seqmodel = self.model_userdefined1(input_shape, num_classes)
 
             self.seqmodel.summary()
             print(self.mlgraph, self.seqmodel)
@@ -51,15 +51,17 @@ class model:
                                 loss='sparse_categorical_crossentropy',
                                 metrics=['accuracy'])
             
-            cp_cb = tf.keras.callbacks.ModelCheckpoint(self.ckpt_path,
-                                save_weights_only=True,
-                                verbose=1)
+            cp_cb = [
+                tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),
+                tf.keras.callbacks.ModelCheckpoint(self.ckpt_path, save_weights_only=True, verbose=1, save_best_only=True)
+            ]
 
+            tf.keras.initializers.glorot_normal(seed=None) # Initialize using xavier
             tf.keras.backend.get_session().run(tf.global_variables_initializer())
                
             x_pp_org = []
             for i in range (0, len(x)):
-                if self.preprocess:
+                if self.ch == 1:
                     x_pp_org.append(self.preprocessing_binary(x[i], y[i]))
                 else:
                     x_pp_org.append(self.preprocessing_normalize(x[i], y[i]))
@@ -68,7 +70,7 @@ class model:
 
             x_valid_pp_org = []
             for j in range(0, len(x_valid)):
-                if self.preprocess:
+                if self.ch == 1:
                     x_valid_pp_org.append(self.preprocessing_binary(x_valid[j], y_valid[j]))
                 else:
                     x_valid_pp_org.append(self.preprocessing_normalize(x_valid[j], y_valid[j]))
@@ -79,15 +81,14 @@ class model:
                                 epochs=epochs, 
                                 validation_data=(x_valid_pp, y_valid),
                                 steps_per_epoch=steps_per_epoch,
-                                callbacks = [cp_cb])
+                                callbacks = cp_cb)
+            self.weight = self.seqmodel.get_weights()
     
     def load_weight(self):
         #print(self.mlgraph, self.seqmodel)
         with self.mlgraph.as_default():
             self.seqmodel.load_weights(self.ckpt_path)
-            #print(self.seqmodel.get_weights())
             self.weight = self.seqmodel.get_weights()
-            #print(self.weight[len(self.weight) - 1])
         return self.weight
     
     def evaluation(self, x, y):
@@ -101,7 +102,7 @@ class model:
             #print(self.weight[len(self.weight) - 1])
             self.seqmodel.set_weights(self.weight)
             
-            if self.preprocess:
+            if self.ch == 1:
                 x_pp_org = self.preprocessing_binary(x)
             else:
                 x_pp_org = self.preprocessing_normalize(x)
