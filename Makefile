@@ -4,4 +4,7 @@ init:
 test:
 	python3 -m unittest tests/simple_unittest.py
 
-.PHONY: init test
+run:
+	python3 main.py
+
+.PHONY: init test run

@@ -133,16 +133,17 @@ class simple_unittest(unittest.TestCase):
         dt.importXML()
     
     #@unittest.skip("Test this separately")
-    def test_preprocess_extractArrow(self):
+    def test_preprocess(self):
 
         dt = data.data()
+        md = model.model()
 
         dt.setImgSize(config.WIDTH_SIZE, config.HEIGHT_SIZE, config.INPUT_CH)
 
         train_dat = np.array(dt.loadData(isTraining=True)[0])
 
         for i, img in enumerate(train_dat):
-            pp_res = dt.preprocess_extractArrow(img)
+            pp_res = md.preprocessing_binary(img)
             cv2.imwrite("res_" + str(i) + ".jpg", pp_res)
 
 

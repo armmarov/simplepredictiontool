@@ -13,13 +13,17 @@ class CamThread(QThread):
     changePixmap = pyqtSignal(QImage)
 
     def __init__(self, parent=None, camera=None):
+
         QThread.__init__(self, parent=parent)
         print("[CamThread] Thread started..")
         self.camera = camera
 
+        self.capture = True
+
     def run(self):
+
         print("[CamThread] Run")
-        while True:
+        while self.capture:
             ret = self.camera.captureImage(config.WIDTH_SIZE, config.HEIGHT_SIZE)
             if ret:
                 img = self.camera.getImage()
@@ -27,12 +31,15 @@ class CamThread(QThread):
                 convertToQtFormat = QImage(rgbImage.data, rgbImage.shape[1], rgbImage.shape[0], QImage.Format_RGB888)
                 p = convertToQtFormat.scaled(320, 240, Qt.KeepAspectRatio)
                 self.changePixmap.emit(p)
+        
+        print("[CamThread] Stop")
 
 class MLThread(QThread):
 
     MLStatus = pyqtSignal(str)
 
     def __init__(self, parent=None, camera=None, data=None):
+
         QThread.__init__(self, parent=parent)
         print("[MLThread] Thread started..")
         self.camera = camera
@@ -52,6 +59,7 @@ class MLThread(QThread):
         self.prev_num = 0
 
     def run(self):
+
         print("[MLThread] Run ", self.mode)
 
         if self.mode == "train":
@@ -64,6 +72,7 @@ class MLThread(QThread):
             self.predict_cnt()
     
     def train(self):
+
         train_dat = np.array(self.data.loadData(isTraining=True)[0])
         train_lbl = np.array(self.data.loadData(isTraining=True)[1])
 
@@ -80,6 +89,7 @@ class MLThread(QThread):
         self.MLStatus.emit("TRAINSUCCESS")
     
     def load(self):
+
         print("Loading weights")
         ret = self.model.load_weight()
         print("Finish loading weights")
@@ -88,6 +98,7 @@ class MLThread(QThread):
             self.MLStatus.emit("LOADSUCCESS")
     
     def predict(self, isCont):
+
         #print("Start prediction")
         imgCrop = self.camera.getCropImage()
 
@@ -259,6 +270,18 @@ class MainApplication(QDialog):
         if i.text() == "&OK":
             self.data.removeDatasets()
             print("Done removing")
+    
+    def closeEvent(self, event):
+
+        close = QMessageBox.question(self, "QUIT", "Sure?", QMessageBox.Yes | QMessageBox.No)
+
+        if close == QMessageBox.Yes:
+            self.th_ml.cont = False
+            self.th.capture = False
+            tm.sleep(1)
+            event.accept()
+        else:
+            event.ignore()
 
     def init_UI(self):
         
@@ -354,6 +377,9 @@ class MainApplication(QDialog):
         mainLayout.setRowStretch(2,1)
         mainLayout.setColumnStretch(0,1)
         mainLayout.setColumnStretch(1,1)
+
+        finish = QAction("Quit", self)
+        finish.triggered.connect(self.closeEvent)
         
         self.setLayout(mainLayout)
 
@@ -365,8 +391,7 @@ if __name__=="__main__":
 
     camera = webcam.webcam()
     data = data.data()
-    #model = model.model()
-    
+
     app = QApplication([])
     mainApps = MainApplication(camera=camera, data=data)
     mainApps.show()
