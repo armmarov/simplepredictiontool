@@ -20,10 +20,10 @@ class CamThread(QThread):
     def run(self):
         print("[CamThread] Run")
         while True:
-            #cap = self.camera.captureImage()
-            ret, frame = self.camera.captureImage()
+            ret = self.camera.captureImage(config.WIDTH_SIZE, config.HEIGHT_SIZE)
             if ret:
-                rgbImage = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                img = self.camera.getImage()
+                rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 convertToQtFormat = QImage(rgbImage.data, rgbImage.shape[1], rgbImage.shape[0], QImage.Format_RGB888)
                 p = convertToQtFormat.scaled(320, 240, Qt.KeepAspectRatio)
                 self.changePixmap.emit(p)
@@ -83,23 +83,25 @@ class MLThread(QThread):
     
     def predict(self, isCont):
         #print("Start prediction")
-        rval, img = self.camera.captureImage()
-        if rval:
-            dat = []
-            dat.append(self.data.resize(img))
-            cv2.imwrite("./test.jpg", self.data.resize(img))
-            resize_img = np.array(dat)
-            ret = self.model.predict(resize_img)
+        imgCrop = self.camera.getCropImage()
 
-            if ret > 0:                
-                for i in range(0,len(self.d_ind)):
-                    if int(self.d_ind[i]) == ret:
-                        url = str(self.d_api[i])
-                        print(url)
-                        data = ''
-                        response = requests.get(url, data)
-                        print(response)
-                        break
+        '''
+        dat = []
+        dat.append(self.data.resize(imgCrop))
+        cv2.imwrite("./test.jpg", self.data.resize(imgCrop))
+        resize_img = np.array(dat)
+        '''
+        ret = self.model.predict(imgCrop)
+
+        if ret > 0:                
+            for i in range(0,len(self.d_ind)):
+                if int(self.d_ind[i]) == ret:
+                    url = str(self.d_api[i])
+                    print(url)
+                    data = ''
+                    response = requests.get(url, data)
+                    print(response)
+                    break
 
         if isCont == False:
             self.MLStatus.emit("PREDSUCCESS")

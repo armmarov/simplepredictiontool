@@ -11,6 +11,9 @@ class webcam:
         self.isTrainingMode = True
 
         self.label_prefix = '001'
+
+        self.img = None
+        self.imgCrop = None
     
     def changeLabel(self, label):
 
@@ -20,18 +23,20 @@ class webcam:
 
         return self.label_prefix
     
-    def captureImage(self):
+    def captureImage(self, w, h):
 
         if self.vc.isOpened():
-            rval, frame = self.vc.read()
-        else:
-            rval = False
-        
-        if rval:
-            return rval, frame
-        else:
-            return rval, []
+            rval, self.img = self.vc.read()
+            self.drawContour(w, h)  
+            return True
+        return False        
     
+    def getImage(self):
+        return self.img
+    
+    def getCropImage(self):
+        return self.imgCrop
+
     def saveImage(self):
 
         #current_dt = datetime.datetime.strptime(str(datetime.datetime.now()), '%Y-%m-%d_%H%M%S%f')
@@ -40,12 +45,9 @@ class webcam:
             savePath = "datasets/train/" + self.label_prefix + '_' + str(datetime.datetime.timestamp(now)) + '.jpg'
         else:
             savePath = "datasets/test/" + self.label_prefix + '_' + str(datetime.datetime.timestamp(now)) + '.jpg'
-        rval, frame = self.captureImage()
-        if rval:
-            cv2.imwrite(savePath, frame)
-            return "Success", savePath
-        
-        return "Failed"
+
+        cv2.imwrite(savePath, self.imgCrop)
+        return "Success", savePath
     
     def closeCamera(self):
 
@@ -55,6 +57,26 @@ class webcam:
 
         self.isTrainingMode = isTraining
         #print(self.setTrainingMode)
+    
+    def drawContour(self, w_resize, h_resize):
+
+        h_org, w_org, c_org = self.img.shape
+
+        img_gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+
+        (thresh, img_bin) = cv2.threshold(img_gray, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+
+        img_inv = 255-img_bin
+
+        contours, hier = cv2.findContours(img_inv, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        for c in contours:
+            x, y, w, h = cv2.boundingRect(c)
+            if w != w_org and h != h_org:
+                if w > w_org/3 or h > h_org/3:
+                    cv2.rectangle(self.img, (x,y), (x+w, y+h), (0,0,255), 2)
+                    self.imgCrop = cv2.resize(self.img[y:y+h, x:x+w], (int(w_resize), int(h_resize)), interpolation=cv2.INTER_CUBIC)
+                    break
 
     def streamImage(self, cb):
 

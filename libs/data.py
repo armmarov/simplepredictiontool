@@ -87,19 +87,3 @@ class data:
         ret_b = np.array(b)
 
         return ret_a, ret_b
-    
-    def preprocess_convertToBinary(self, dat):
-        return (dat > 120).astype(int)
-    
-    def preprocess_extractArrow(self, img):
-
-        img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-        lower_blue = np.array([45, 43, 43])
-        upper_blue = np.array([255, 253, 255])
-
-        mask = cv2.inRange(img_hsv, lower_blue, upper_blue)
-
-        res = cv2.bitwise_and(img, img, mask=mask)
-
-        return res

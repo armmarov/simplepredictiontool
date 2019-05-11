@@ -1,6 +1,8 @@
 import tensorflow as tf
 import numpy as np
 import os
+import cv2
+import random
 
 class model:
 
@@ -52,12 +54,23 @@ class model:
                                 save_weights_only=True,
                                 verbose=1)
 
-
             tf.keras.backend.get_session().run(tf.global_variables_initializer())
             
-            self.seqmodel.fit(x, y, batch_size=batch, 
+            x_pp_org = []
+            for i in range (0, len(x)):
+                x_pp_org.append(self.preprocessing(x[i], y[i]))
+            x_pp = np.array(x_pp_org)
+            x_pp = np.reshape(x_pp, (len(x_pp_org),len(x_pp_org[0]), len(x_pp_org[1]), 1))
+
+            x_valid_pp_org = []
+            for j in range(0, len(x_valid)):
+                x_valid_pp_org.append(self.preprocessing(x_valid[j], y_valid[j]))
+            x_valid_pp = np.array(x_valid_pp_org)
+            x_valid_pp = np.reshape(x_valid_pp, (len(x_valid_pp_org),len(x_valid_pp_org[0]), len(x_valid_pp_org[1]), 1))
+
+            self.seqmodel.fit(x_pp, y, batch_size=batch, 
                                 epochs=epochs, 
-                                validation_data=(x_valid, y_valid),
+                                validation_data=(x_valid_pp, y_valid),
                                 steps_per_epoch=steps_per_epoch,
                                 callbacks = [cp_cb])
     
@@ -80,10 +93,15 @@ class model:
         with self.mlgraph.as_default():
             #print(self.weight[len(self.weight) - 1])
             self.seqmodel.set_weights(self.weight)
-            pred_res = self.seqmodel.predict(x)
+            
+            x_pp_org = self.preprocessing(x)
+            x_pp = np.array(x_pp_org)
+            x_pp = np.reshape(x_pp, (1,len(x_pp_org[0]), len(x_pp_org[1]), 1))
+            
+            pred_res = self.seqmodel.predict(x_pp)
             ret = 0
-            for x in pred_res[0]:
-                if x > 0.90:
+            for _p in pred_res[0]:
+                if _p > 0.90:
                     ret = np.argmax(pred_res)
                     print("Prediction: ", ret, pred_res)
     
@@ -124,4 +142,17 @@ class model:
         output_layer = tf.keras.layers.Dense(_classes, activation='softmax', name='logits')(fc_2)
 
         return input_layer, output_layer
+    
+    def preprocessing(self, img, lbl=None):
+
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        (thresh, img_bin) = cv2.threshold(img_gray, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        
+        img_inv = 255-img_bin
+
+        if lbl != None:
+            cv2.imwrite("datasets/temp/res_" + str(random.randint(1,200)) + "_" + str(lbl) + ".jpg", img_inv)
+        
+        return img_inv
 
