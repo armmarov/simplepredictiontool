@@ -12,9 +12,11 @@ INPUT_CH     = 1  # 3 for RGB, 1 for BLACK/WHITE
 MODEL_TYPE   = "ud1"
 
 ## Training parameters
-EPOCH_NUM       = 1000
-STEPS_PER_EPOCH = 5
-BATCH_SIZE      = 10
+TRAIN_OPTIMIZER       = 'adam'
+TRAIN_LOSS            = 'sparse_categorical_crossentropy'
+TRAIN_EPOCH_NUM       = 1000
+TRAIN_STEPS_PER_EPOCH = 5
+TRAIN_BATCH_SIZE      = 10
 
 ## Prediction
 PRED_SENSITIVITY  = 1

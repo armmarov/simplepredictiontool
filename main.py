@@ -70,9 +70,12 @@ class MLThread(QThread):
         validation_dat = np.array(self.data.loadData(isTraining=False)[0])
         validation_lbl = np.array(self.data.loadData(isTraining=False)[1])
 
-        self.model.training(train_dat, train_lbl, validation_dat, validation_lbl, epochs=config.EPOCH_NUM, 
-                                                steps_per_epoch=config.STEPS_PER_EPOCH, 
-                                                batch=config.BATCH_SIZE)
+        self.model.training(train_dat, train_lbl, validation_dat, validation_lbl, 
+                            epochs=config.TRAIN_EPOCH_NUM, 
+                            steps_per_epoch=config.TRAIN_STEPS_PER_EPOCH, 
+                            batch=config.TRAIN_BATCH_SIZE,
+                            optimizer=config.TRAIN_OPTIMIZER,
+                            loss=config.TRAIN_LOSS)
         
         self.MLStatus.emit("TRAINSUCCESS")
     

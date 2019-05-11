@@ -41,14 +41,20 @@ class model:
 
         return self.seqmodel
     
-    def training(self, x, y, x_valid, y_valid, epochs, steps_per_epoch, batch):
+    def training(self, x, y, x_valid, y_valid, **kwargs):
+        
+        epochs = kwargs['epochs']
+        steps_per_epoch = kwargs['steps_per_epoch']
+        batch = kwargs['batch']
+        optimizer = kwargs['optimizer']
+        loss = kwargs['loss']
 
         print(self.mlgraph, self.seqmodel)
 
         with self.mlgraph.as_default():
 
-            self.seqmodel.compile(optimizer='adam',
-                                loss='sparse_categorical_crossentropy',
+            self.seqmodel.compile(optimizer=optimizer,
+                                loss=loss,
                                 metrics=['accuracy'])
             
             cp_cb = [
