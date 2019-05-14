@@ -2,22 +2,22 @@
 	<item>
 		<name>Right</name>
 		<index>001</index>
-		<api>http://blynk-cloud.com/a2879021ec1d448fb6896b6fa2099cbf/update/V4?value=555</api>
+		<api>http://blynk-cloud.com/a2879021ec1d448fb6896b6fa2099cbf/update/V4?value=333</api>
 	</item>
 	<item>
 		<name>Left</name>
 		<index>002</index>
-		<api>http://blynk-cloud.com/a2879021ec1d448fb6896b6fa2099cbf/update/V3?value=555</api>
+		<api>http://blynk-cloud.com/a2879021ec1d448fb6896b6fa2099cbf/update/V3?value=333</api>
 	</item>
 	<item>
 		<name>Forward</name>
 		<index>003</index>
-		<api>http://blynk-cloud.com/a2879021ec1d448fb6896b6fa2099cbf/update/V1?value=555</api>
+		<api>http://blynk-cloud.com/a2879021ec1d448fb6896b6fa2099cbf/update/V1?value=333</api>
 	</item>
 	<item>
 		<name>Backward</name>
 		<index>004</index>
-		<api>http://blynk-cloud.com/a2879021ec1d448fb6896b6fa2099cbf/update/V2?value=555</api>
+		<api>http://blynk-cloud.com/a2879021ec1d448fb6896b6fa2099cbf/update/V2?value=333</api>
 	</item>
 	<item>
 		<name>Stop</name>
