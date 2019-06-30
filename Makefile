@@ -4,6 +4,9 @@ init:
 test:
 	python3 -m unittest tests/simple_unittest.py
 
+train:
+	python3 -m unittest tests/train_unittest.py
+
 lint: 
 	pylint --rcfile=.pylintrc main.py
 

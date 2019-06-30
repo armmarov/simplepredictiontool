@@ -10,7 +10,10 @@ To install :
 >> make init
 
 To run application :
->> python main.py
+>> make run
+
+To run train separately :
+>> make train
 
 You can customize the label by modifying libs/label.xml file.
 
