@@ -58,7 +58,7 @@ class model:
                                 metrics=['accuracy'])
             
             cp_cb = [
-                tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),
+                tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=True),
                 tf.keras.callbacks.ModelCheckpoint(self.ckpt_path, save_weights_only=True, verbose=1, save_best_only=True)
             ]
 

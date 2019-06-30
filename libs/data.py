@@ -18,8 +18,12 @@ class data:
 
         data = []
         label = []
+        files = []
 
-        for file in glob.glob(path + "*.jpg"):
+        for ext in ('*.jpg', '*.png', '*.jpeg', '*.gif', '*.bmp'):
+            files.extend(glob.glob(os.path.join(path, ext)))
+        
+        for file in files:
             bgr_img = cv2.imread(file)
             data.append(self.resize(bgr_img))
             filename = os.path.basename(file)

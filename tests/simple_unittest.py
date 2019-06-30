@@ -41,7 +41,7 @@ class simple_unittest(unittest.TestCase):
 
         self.assertIsNotNone(md.createModel((20,20,3), 5))
     
-    @unittest.skip("Test this separately")
+    #@unittest.skip("Test this separately")
     def test_training(self):
         print("test_training...")
 
@@ -57,9 +57,10 @@ class simple_unittest(unittest.TestCase):
         valid_lbl = np.array(dt.loadData(isTraining=False)[1])
 
         md.createModel((config.INPUT_ROW,config.INPUT_COL,config.INPUT_CH), config.OUTPUT_CLASS)
-        md.training(train_dat, train_lbl, valid_dat, valid_lbl, epochs=config.EPOCH_NUM, 
-                                                steps_per_epoch=config.STEPS_PER_EPOCH, 
-                                                batch=config.BATCH_SIZE)
+        md.training(train_dat, train_lbl, valid_dat, valid_lbl, epochs=config.TRAIN_EPOCH_NUM, 
+                                                steps_per_epoch=config.TRAIN_STEPS_PER_EPOCH, 
+                                                batch=config.TRAIN_BATCH_SIZE, optimizer=config.TRAIN_OPTIMIZER,
+                                                loss=config.TRAIN_LOSS)
 
     @unittest.skip("Test this separately")
     def test_evaluation(self):
@@ -132,7 +133,7 @@ class simple_unittest(unittest.TestCase):
 
         dt.importXML()
     
-    #@unittest.skip("Test this separately")
+    @unittest.skip("Test this separately")
     def test_preprocess(self):
 
         dt = data.data()
