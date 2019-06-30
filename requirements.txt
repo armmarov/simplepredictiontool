@@ -1,5 +1,6 @@
-numpy==1.16.2
-opencv-python==4.1.0.25
-scipy==0.19.1
+numpy
+opencv-python
+scipy
+requests
 tensorflow==1.13.1
-PyQt5==5.12.2
+PyQt5
