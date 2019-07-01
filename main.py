@@ -97,6 +97,10 @@ class MLThread(QThread):
 
         validation_dat = np.array(self.data.loadData(isTraining=False)[0])
         validation_lbl = np.array(self.data.loadData(isTraining=False)[1])
+        
+        if len(train_dat) == 0 or len(train_lbl) == 0 or len(validation_dat) == 0 or len(validation_lbl) == 0:
+            self.MLStatus.emit("INPUTEMPTY")
+            return
 
         self.model.training(train_dat, train_lbl, validation_dat, validation_lbl,
                             epochs=config.TRAIN_EPOCH_NUM,
@@ -120,6 +124,10 @@ class MLThread(QThread):
 
         #print("Start prediction")
         img_crop = self.camera.getCropImage()
+
+        if img_crop is None:
+            self.MLStatus.emit("INPUTEMPTY")
+            return
 
         ret = self.model.predict(img_crop)
 
@@ -197,6 +205,14 @@ class MainApplication(QDialog):
             self.load_btn.setEnabled(True)
             self.prediction_btn.setEnabled(True)
             self.prediction_cnt_btn.setEnabled(True)
+            self.app_label.setText("Status : Idle")
+        
+        elif stat == "INPUTEMPTY":
+            self.start_train_btn.setEnabled(True)
+            self.load_btn.setEnabled(True)
+            self.prediction_btn.setEnabled(True)
+            self.prediction_cnt_btn.setEnabled(True)
+            print("Input Empty !!!")
             self.app_label.setText("Status : Idle")
 
     def capture_image(self):
