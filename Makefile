@@ -7,6 +7,12 @@ test:
 train:
 	python3 -m unittest tests/train_unittest.py
 
+evaluate:
+	python3 -m unittest tests/evaluate_unittest.py
+
+predict:
+	python3 -m unittest tests/predict_unittest.py
+
 lint: 
 	pylint --rcfile=.pylintrc main.py
 

@@ -92,17 +92,14 @@ class MLThread(QThread):
 
     def train(self):
 
-        train_dat = np.array(self.data.loadData(isTraining=True)[0])
-        train_lbl = np.array(self.data.loadData(isTraining=True)[1])
+        train_dat, validation_dat = self.data.genImage()
 
-        validation_dat = np.array(self.data.loadData(isTraining=False)[0])
-        validation_lbl = np.array(self.data.loadData(isTraining=False)[1])
-        
         if len(train_dat) == 0 or len(train_lbl) == 0 or len(validation_dat) == 0 or len(validation_lbl) == 0:
             self.MLStatus.emit("INPUTEMPTY")
             return
 
-        self.model.training(train_dat, train_lbl, validation_dat, validation_lbl,
+        self.model.training(train_dat, None, validation_dat, None,
+
                             epochs=config.TRAIN_EPOCH_NUM,
                             steps_per_epoch=config.TRAIN_STEPS_PER_EPOCH,
                             batch=config.TRAIN_BATCH_SIZE,
@@ -112,6 +109,9 @@ class MLThread(QThread):
         self.MLStatus.emit("TRAINSUCCESS")
 
     def load(self):
+
+        print("Compile model")
+        self.model.compileModel(config.TRAIN_OPTIMIZER, config.TRAIN_LOSS)
 
         print("Loading weights")
         ret = self.model.load_weight()

@@ -33,6 +33,17 @@ class simple_unittest(unittest.TestCase):
 
         self.assertGreater(len(dt.loadData(isTraining=True)[0]), 0)
 
+    def test_generator(self):
+
+        print("test_generator...")
+
+        dt = data.data()
+        dt.setImgSize(config.HEIGHT_SIZE, config.WIDTH_SIZE, config.INPUT_CH)
+        tr, vd = dt.genImage()
+
+        print(tr.samples)
+        print(vd.samples)
+
     @unittest.skip("Test this separately")
     def test_createModel(self):
         print("test_createModel...")
@@ -41,7 +52,7 @@ class simple_unittest(unittest.TestCase):
 
         self.assertIsNotNone(md.createModel((20,20,3), 5))
     
-    #@unittest.skip("Test this separately")
+    @unittest.skip("Test this separately")
     def test_training(self):
         print("test_training...")
 

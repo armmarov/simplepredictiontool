@@ -5,14 +5,15 @@ from xml.dom import minidom
 import numpy as np
 import tensorflow as tf
 import random
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 class data:
 
     def __init__(self):
 
         self.parent_dir = "./datasets"
-        self.train_dir = self.parent_dir + "/train/"
-        self.test_dir = self.parent_dir + "/test/"
+        self.train_dir = self.parent_dir + "/train"
+        self.test_dir = self.parent_dir + "/test"
     
     def __loadImages(self, path):
 
@@ -31,6 +32,40 @@ class data:
 
         return data, label
 
+    def genImage(self):
+        
+        np.random.seed(1)
+        seed=1337
+
+        train_datagen = ImageDataGenerator(
+            rescale=1./255,
+            rotation_range=40,
+            width_shift_range=0.2,
+            height_shift_range=0.2,
+            shear_range=0.2,
+            zoom_range=0.2,
+            horizontal_flip=True,
+            fill_mode='nearest')
+
+        train_generator = train_datagen.flow_from_directory(self.train_dir,
+                                                    target_size=(self.height,self.width),
+                                                    batch_size=10,
+                                                    seed=seed,
+                                                    shuffle=True,
+                                                    class_mode='categorical')
+
+        # Test generator
+        test_datagen = ImageDataGenerator(rescale=1./255)
+        validation_generator = test_datagen.flow_from_directory(self.test_dir,
+                                                  target_size=(self.height,self.width),
+                                                  batch_size=10,
+                                                  seed=seed,
+                                                  shuffle=False,
+                                                  class_mode='categorical')
+
+        return train_generator, validation_generator
+        
+
     def setImgSize(self, width, height, channel):
 
         self.width = width
@@ -40,9 +75,9 @@ class data:
     def loadData(self, isTraining):
 
         if isTraining:
-            return self.__loadImages(self.train_dir)
+            return self.__loadImages(self.train_dir + "/*/")
         else:
-            return self.__loadImages(self.test_dir)
+            return self.__loadImages(self.test_dir + "/*/")
     
     def importXML(self):
 
