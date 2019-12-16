@@ -2,5 +2,5 @@ numpy
 opencv-python
 scipy
 requests
-tensorflow==1.13.1
+tensorflow==1.15.0
 PyQt5
