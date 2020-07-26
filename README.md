@@ -1,6 +1,8 @@
 
 
-### Simple Prediction Tool ### Developed by Ammar ### Email : armmarov@gmail.com
+### Simple Prediction Tool 
+### Developed by Ammar 
+### Email : armmarov@gmail.com
 
 # Introduction
 
