@@ -16,15 +16,24 @@ python3, pip3
 
 #### To install :
 
-`bash $ make init .. `
+```bash
+$ make init
+..
+```
 
 #### To run application :
 
-`bash $ make run .. `
+```bash
+$ make run
+..
+```
 
 #### To run train separately :
 
-`bash $ make train .. `
+```bash
+$ make train
+..
+```
 
 You can customize the label by modifying libs/label.xml file.
 
